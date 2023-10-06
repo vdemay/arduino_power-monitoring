@@ -51,7 +51,6 @@ void IRAM_ATTR TimerHandler()
        }
     }
   }
-  //ISR_Timer.run();
 }
 
 #ifndef STASSID
@@ -72,28 +71,11 @@ int power = 96;
 
 // ISR called on zero crossing
 void IRAM_ATTR onZero() {
-    //if(power > 0) {
         // generate a pulse after this zero - delay is in microSeconds
         // power=100%: no wait, power=0%: wait 10ms
         start = micros();
         pulseDelay = power==100? 1 : (100-power)*100;
 
-        //ISR_Timer.setTimeout(delay, onDelayExpired); 
-        //Serial.println(millis());
-    //}
-}
-
-// called at the end of the pulse
-void onPulseEnd() {
-    digitalWrite(PIN_SCR, LOW);
-}
-
-// called when the delay after the zero crossing has expired
-void onDelayExpired() {
-    // start the pulse and arm a timer to end it
-    // generate a pulse (below 50% this is a short pulse, above the pulse has a 3ms duration)
-    digitalWrite(PIN_SCR, HIGH);
-    ISR_Timer.setTimeout(power < 50 ? 30 : 3000, onPulseEnd);
 }
 
 ///// SERVER //////
@@ -107,7 +89,7 @@ void handleSet() {
     String name = server.argName(i);
     if (name == "power") {
       int tmp = server.arg(i).toInt();
-      if (tmp > 96) {
+      if (tmp > 96) { // more than 96 leads to less consumption - let limit it to 96
         power = 96;
       } else if (tmp < 0 ) {
         power = 0;
